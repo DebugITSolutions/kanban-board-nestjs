@@ -40,7 +40,7 @@ export class BoardAddCardDto {
     @ApiProperty({
         example: 1
     })
-    board_id: number;
+    column_id: number;
 
     @ApiProperty({
         example: 'Новая карточка'

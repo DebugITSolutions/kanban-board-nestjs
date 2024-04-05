@@ -65,4 +65,65 @@ export class BoardsService {
         }
     }
 
+    createNewColumn(title: string) {
+        try {
+            const column = new Columns()
+            column.name = title
+            return column
+        } catch(e) {
+            return e.message
+        }
+    }
+
+    async createNewCard(title: string) {
+        try {
+            const card = new Cards()
+            card.title = title
+            return await this.cardsRepository.save(card)
+        } catch(e) {
+            return e.message
+        }
+    }
+
+    async addCardAtColumn(column_id: number, card: Cards) {
+        const currentColumn = await this.columnsRepository.findOne({where: {id: column_id}})
+        if (!currentColumn) {
+            return new BadRequestException()
+        }
+
+        if (!card) {
+            return new BadRequestException()
+        }
+
+        card.columns = currentColumn
+        await this.cardsRepository.save(card)
+        await this.columnsRepository.save(currentColumn)
+        return await this.columnsRepository.findOne({
+            where: {id: column_id},
+            relations: ['cards']
+        })
+    }
+
+    async addColumnAtBoard(column: Columns, board_id: number) {
+        try {
+            const currentBoard = await this.boardsRepository.findOne({where: {id: board_id}})
+            if (!currentBoard) {
+                return new BadRequestException()
+            }
+
+            if (!column) {
+                return new BadRequestException()
+            }
+
+            column.boards = currentBoard
+            await this.columnsRepository.save(column)
+            await this.boardsRepository.save(currentBoard)
+            return await this.boardsRepository.findOne({
+                where: {id: board_id},
+                relations: ['users', 'columns', 'columns.cards']
+            })
+        } catch (e) {
+            return e.message
+        }
+    }
 }

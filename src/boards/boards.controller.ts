@@ -8,12 +8,21 @@ export class BoardsController {
     }
     @Post('create')
     async createBoard(@Body() boardInfo: BoardsCreateDto) {
-        return await this.boardsService.createNewBoard(boardInfo)
+        try {
+            return await this.boardsService.createNewBoard(boardInfo)
+        } catch (e) {
+            return e.message
+        }
     }
 
     @Get('full-board/:id')
     async getBoard(@Param('id') id: number) {
-        return await this.boardsService.getFullInfoBoardById(id)
+        try {
+            return await this.boardsService.getFullInfoBoardById(id)
+        } catch (e) {
+            return e.message
+        }
+
     }
 
     @Put('add-user')
@@ -23,12 +32,22 @@ export class BoardsController {
 
     @Put('add-column')
     async addColumnAtBoard(@Body() data: BoardAddColumnDto) {
-
+        try {
+            const newColumn = this.boardsService.createNewColumn(data.columnTitle)
+            return await this.boardsService.addColumnAtBoard(newColumn, data.board_id)
+        } catch(e) {
+            return e.message
+        }
     }
 
     @Put('add-card')
     async addCardAtBoard(@Body() data: BoardAddCardDto) {
-
+        try {
+            const newCard = await this.boardsService.createNewCard(data.cardTitle)
+            return this.boardsService.addCardAtColumn(data.column_id, newCard)
+        } catch (e) {
+            return e.message
+        }
     }
 
     @Put('move-card')
