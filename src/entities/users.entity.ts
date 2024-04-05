@@ -1,4 +1,5 @@
-import {Column, Entity, PrimaryGeneratedColumn} from "typeorm";
+import {Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn} from "typeorm";
+import {Boards} from "./boards.entity";
 
 @Entity()
 export class Users {
@@ -10,4 +11,7 @@ export class Users {
     name: string
     @Column()
     password: string
+
+    @ManyToOne(() => Boards, (boards) => boards.users, {onDelete: "CASCADE"})
+    boards: Boards[]
 }

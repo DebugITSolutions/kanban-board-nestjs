@@ -1,4 +1,4 @@
-import {Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn} from "typeorm";
+import {Column, Entity, JoinColumn, ManyToOne, OneToOne, PrimaryGeneratedColumn} from "typeorm";
 import {Users} from "./users.entity";
 
 @Entity()
@@ -6,7 +6,7 @@ export class Token {
     @PrimaryGeneratedColumn()
     id: number;
 
-    @ManyToOne(() => Users)
+    @OneToOne(() => Users, {onDelete: "CASCADE"})
     @JoinColumn({ name: 'user_id' })
     user: Users;
 

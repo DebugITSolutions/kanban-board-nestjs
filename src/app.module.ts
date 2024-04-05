@@ -6,12 +6,14 @@ import {UsersModule} from "./user/users.module";
 import {AuthModule} from "./auth/auth.module";
 import {JwtModule} from "@nestjs/jwt";
 import {Token} from "./entities/token.entity";
+import {BoardsModule} from "./boards/boards.module";
 
 @Module({
   imports: [
       ConfigModule.forRoot({isGlobal: true}),
       UsersModule,
       AuthModule,
+      BoardsModule,
       forwardRef(() => AuthModule),
       TypeOrmModule.forRootAsync({
           imports: [ConfigModule],
