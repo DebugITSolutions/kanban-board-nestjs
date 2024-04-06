@@ -67,7 +67,7 @@ export class BoardsService {
     createNewColumn(title: string) {
         try {
             const column = new Columns()
-            column.name = title
+            column.title = title
             return column
         } catch(e) {
             throw new BadRequestException(e.message)
@@ -196,6 +196,88 @@ export class BoardsService {
     async deleteBoard(board_id: number) {
         try {
             await this.boardsRepository.delete({id: board_id})
+        } catch (e) {
+            throw new BadRequestException(e.message)
+        }
+    }
+
+    async deleteColumn(column_id: number) {
+        try {
+            await this.columnsRepository.delete({id: column_id})
+        } catch (e) {
+            throw new BadRequestException(e.message)
+        }
+    }
+
+    async deleteUser(board_id: number, user_id: number) {
+        try {
+            const currentBoard = await this.boardsRepository.findOne({
+                where: {id: board_id},
+                relations: ['users']
+            })
+
+            if (!currentBoard) {
+                throw new BadRequestException()
+            }
+
+            const currentUser = await this.userRepository.findOne({where: {id: user_id}})
+            if (!currentUser) {
+                throw new BadRequestException()
+            }
+
+            currentBoard.users = currentBoard.users.filter((item) => item.id !== user_id)
+            await this.boardsRepository.save(currentBoard)
+            return this.getFullInfoBoardById(board_id)
+        } catch (e) {
+            throw new BadRequestException(e.message)
+        }
+    }
+
+    async changeColumnTitle(column_id: number, newTitle: string) {
+        try {
+            const currentColumn = await this.columnsRepository.findOne({
+                where: {id: column_id},
+                relations: ['boards']
+            })
+            if (!currentColumn) {
+                throw new BadRequestException()
+            }
+            currentColumn.title = newTitle
+            await this.columnsRepository.save(currentColumn)
+            return this.getFullInfoBoardById(currentColumn.boards.id)
+        } catch (e) {
+            throw new BadRequestException(e.message)
+        }
+    }
+
+    async changeBoardTitle(board_id:number, newTitle: string) {
+        try {
+            const currentBoard = await this.boardsRepository.findOne({where: {id: board_id}})
+            if (!currentBoard) {
+                throw new BadRequestException()
+            }
+
+            currentBoard.title = newTitle
+            await this.boardsRepository.save(currentBoard)
+            return this.getFullInfoBoardById(board_id)
+        } catch (e) {
+            throw new BadRequestException(e.message)
+        }
+    }
+
+    async changeCardTitle(card_id: number, newTitle: string) {
+        try {
+            const currentCard = await this.cardsRepository.findOne({
+                where: {id: card_id},
+                relations: ['columns', 'columns.boards']
+            })
+            if (!currentCard) {
+                throw new BadRequestException()
+            }
+
+            currentCard.title = newTitle
+            await this.cardsRepository.save(currentCard)
+            return await this.getFullInfoBoardById(currentCard.columns.boards.id)
         } catch (e) {
             throw new BadRequestException(e.message)
         }

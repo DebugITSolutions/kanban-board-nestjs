@@ -8,7 +8,7 @@ export class Columns {
     id: number;
 
     @Column()
-    name: string;
+    title: string;
 
     @ManyToOne(() => Boards, (boards) => boards.columns, {onDelete: 'CASCADE'})
     @JoinColumn({name: 'board_id'})
