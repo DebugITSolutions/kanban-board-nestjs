@@ -54,7 +54,8 @@ export class AuthController {
         }
         const verifyToken = this.authService.verifyToken(refreshToken)
         if (!verifyToken) {
-            throw new UnauthorizedException()
+            response.clearCookie('refreshToken')
+            return new UnauthorizedException()
         }
         const newTokens = this.authService.generateTokens(verifyToken)
         response.cookie('refreshToken', newTokens.refreshToken)
