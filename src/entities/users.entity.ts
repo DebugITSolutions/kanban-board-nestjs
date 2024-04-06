@@ -11,7 +11,4 @@ export class Users {
     name: string
     @Column()
     password: string
-
-    @ManyToOne(() => Boards, (boards) => boards.users, {onDelete: "CASCADE"})
-    boards: Boards[]
 }

@@ -1,4 +1,4 @@
-import {Column, Entity, OneToMany, PrimaryGeneratedColumn} from "typeorm";
+import {Column, Entity, JoinColumn, JoinTable, ManyToMany, OneToMany, PrimaryGeneratedColumn} from "typeorm";
 import {Columns} from "./columns.entity";
 import {Users} from "./users.entity";
 
@@ -13,6 +13,7 @@ export class Boards {
     @OneToMany(() => Columns, (column) => column.boards, {onDelete: 'CASCADE'})
     columns: Columns[]
 
-    @OneToMany(() => Users, (users) => users.boards, {onDelete: 'CASCADE'})
+    @ManyToMany(() => Users, {onDelete: 'CASCADE'})
+    @JoinTable({name: 'boards_users'})
     users: Users[]
 }

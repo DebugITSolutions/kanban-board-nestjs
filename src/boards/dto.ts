@@ -52,10 +52,24 @@ export class MoveCardAtColumnDto {
     @ApiProperty({
         example: 1
     })
-    board_id: number;
+    card_id: number;
 
     @ApiProperty({
-        example: 'Новая колонка'
+        example: 1
     })
-    columnTitle: string;
+    column_id: number;
+}
+
+export class DeleteCardDto{
+    @ApiProperty({
+        example: 1
+    })
+    card_id: number
+}
+
+export class DeleteBoardDto {
+    @ApiProperty({
+        example: 1
+    })
+    board_id: number
 }

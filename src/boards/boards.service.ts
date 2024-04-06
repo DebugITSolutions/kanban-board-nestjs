@@ -26,15 +26,13 @@ export class BoardsService {
             const currentUser = await this.userRepository.findOne({where: {id: boardInfo.user_id}})
 
             if (!currentUser) {
-                return new BadRequestException()
+                throw new BadRequestException()
             }
 
-            const column1 = new Columns();
-            column1.name = 'Колонка 1';
+            const column1 = this.createNewColumn('Новая колонка 1')
             await this.columnsRepository.save(column1);
 
-            const column2 = new Columns();
-            column2.name = 'Колонка 2';
+            const column2 = this.createNewColumn('Новая колонка 2')
             await this.columnsRepository.save(column2);
 
             const board = new Boards();
@@ -42,8 +40,9 @@ export class BoardsService {
             board.columns = [column1, column2]
             board.users = [{...currentUser, password: ''}]
             await this.boardsRepository.save(board);
+            return board
         } catch (e) {
-            return e.message
+            throw new BadRequestException(e.message)
         }
     }
 
@@ -55,13 +54,13 @@ export class BoardsService {
             })
 
             if (!board) {
-                return new BadRequestException()
+                throw new BadRequestException()
             }
 
             return board
 
         } catch (e) {
-            return e.message
+            throw new BadRequestException(e.message)
         }
     }
 
@@ -71,7 +70,7 @@ export class BoardsService {
             column.name = title
             return column
         } catch(e) {
-            return e.message
+            throw new BadRequestException(e.message)
         }
     }
 
@@ -81,49 +80,124 @@ export class BoardsService {
             card.title = title
             return await this.cardsRepository.save(card)
         } catch(e) {
-            return e.message
+            throw new BadRequestException()
         }
     }
 
     async addCardAtColumn(column_id: number, card: Cards) {
-        const currentColumn = await this.columnsRepository.findOne({where: {id: column_id}})
-        if (!currentColumn) {
-            return new BadRequestException()
-        }
+        try {
+            const currentColumn = await this.columnsRepository.findOne({
+                where: {id: column_id},
+                relations: ['boards']
+            })
+            if (!currentColumn) {
+                throw new BadRequestException()
+            }
 
-        if (!card) {
-            return new BadRequestException()
-        }
+            if (!card) {
+                throw new BadRequestException()
+            }
 
-        card.columns = currentColumn
-        await this.cardsRepository.save(card)
-        await this.columnsRepository.save(currentColumn)
-        return await this.columnsRepository.findOne({
-            where: {id: column_id},
-            relations: ['cards']
-        })
+            card.columns = currentColumn
+            await this.cardsRepository.save(card)
+            await this.columnsRepository.save(currentColumn)
+            return await this.getFullInfoBoardById(currentColumn?.boards.id)
+        } catch (e) {
+            throw new BadRequestException()
+        }
     }
 
     async addColumnAtBoard(column: Columns, board_id: number) {
         try {
             const currentBoard = await this.boardsRepository.findOne({where: {id: board_id}})
             if (!currentBoard) {
-                return new BadRequestException()
+                throw new BadRequestException()
             }
 
             if (!column) {
-                return new BadRequestException()
+                throw new BadRequestException()
             }
 
             column.boards = currentBoard
             await this.columnsRepository.save(column)
             await this.boardsRepository.save(currentBoard)
-            return await this.boardsRepository.findOne({
-                where: {id: board_id},
-                relations: ['users', 'columns', 'columns.cards']
-            })
+            return await this.getFullInfoBoardById(board_id)
         } catch (e) {
-            return e.message
+            throw new BadRequestException(e.message)
+        }
+    }
+
+    async addUserAtBoard(user_id:number, board_id:number) {
+        try {
+            const currentBoard = await this.boardsRepository.findOne({
+                where: {id: board_id},
+                relations: ['users']
+            })
+            if (!currentBoard) {
+                return new BadRequestException()
+            }
+
+            const currentUser = await this.userRepository.findOne({where: {id: user_id}})
+
+            if (!currentUser) {
+                return new BadRequestException()
+            }
+            currentUser.password = ''
+            currentBoard.users = [...currentBoard.users, currentUser]
+            await this.boardsRepository.save(currentBoard)
+            return await this.getFullInfoBoardById(board_id)
+        } catch (e) {
+            throw new BadRequestException(e.message)
+        }
+    }
+
+    async moveCardAtColumn(column_id: number, card_id: number) {
+        try {
+            const currentColumn = await this.columnsRepository.findOne({
+                where: {id: column_id},
+                relations: ['boards']
+            })
+
+            if (!currentColumn) {
+                throw new BadRequestException()
+            }
+
+            const currentCard = await this.cardsRepository.findOne({where: {id: card_id}})
+
+            if (!currentCard) {
+                throw new BadRequestException()
+            }
+
+            currentCard.columns = currentColumn
+            await this.cardsRepository.save(currentCard)
+            await this.columnsRepository.save(currentColumn)
+            return await this.getFullInfoBoardById(currentColumn.boards.id)
+        } catch (e) {
+            throw new BadRequestException(e.message)
+        }
+    }
+
+    async deleteCard(card_id:number) {
+        try {
+            const currentCard = await this.cardsRepository.findOne({
+                where: {id: card_id},
+                relations: ['columns', 'columns.boards']
+            })
+            if (!currentCard) {
+                throw new BadRequestException()
+            }
+            await this.cardsRepository.delete({id: card_id})
+            return this.getFullInfoBoardById(currentCard?.columns.boards.id)
+        } catch (e) {
+            throw new BadRequestException(e.message)
+        }
+    }
+
+    async deleteBoard(board_id: number) {
+        try {
+            await this.boardsRepository.delete({id: board_id})
+        } catch (e) {
+            throw new BadRequestException(e.message)
         }
     }
 }

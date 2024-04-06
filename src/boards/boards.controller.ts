@@ -1,6 +1,14 @@
-import {Body, Controller, Get, Param, Post, Put} from "@nestjs/common";
+import {Body, Controller, Get, Param, Post, Put, Res} from "@nestjs/common";
 import {BoardsService} from "./boards.service";
-import {BoardAddCardDto, BoardAddColumnDto, BoardAddUserDto, BoardsCreateDto, MoveCardAtColumnDto} from "./dto";
+import {
+    BoardAddCardDto,
+    BoardAddColumnDto,
+    BoardAddUserDto,
+    BoardsCreateDto, DeleteBoardDto,
+    DeleteCardDto,
+    MoveCardAtColumnDto
+} from "./dto";
+import {Response} from "express";
 
 @Controller('boards')
 export class BoardsController {
@@ -8,56 +16,39 @@ export class BoardsController {
     }
     @Post('create')
     async createBoard(@Body() boardInfo: BoardsCreateDto) {
-        try {
-            return await this.boardsService.createNewBoard(boardInfo)
-        } catch (e) {
-            return e.message
-        }
+        return await this.boardsService.createNewBoard(boardInfo)
     }
 
     @Get('full-board/:id')
     async getBoard(@Param('id') id: number) {
-        try {
-            return await this.boardsService.getFullInfoBoardById(id)
-        } catch (e) {
-            return e.message
-        }
-
+        return await this.boardsService.getFullInfoBoardById(id)
     }
 
     @Put('add-user')
     async addUserAtBoard(@Body() data: BoardAddUserDto) {
-
+        return this.boardsService.addUserAtBoard(data.user_id, data.board_id)
     }
 
     @Put('add-column')
     async addColumnAtBoard(@Body() data: BoardAddColumnDto) {
-        try {
-            const newColumn = this.boardsService.createNewColumn(data.columnTitle)
-            return await this.boardsService.addColumnAtBoard(newColumn, data.board_id)
-        } catch(e) {
-            return e.message
-        }
+        const newColumn = this.boardsService.createNewColumn(data.columnTitle)
+        return await this.boardsService.addColumnAtBoard(newColumn, data.board_id)
     }
 
     @Put('add-card')
     async addCardAtBoard(@Body() data: BoardAddCardDto) {
-        try {
-            const newCard = await this.boardsService.createNewCard(data.cardTitle)
-            return this.boardsService.addCardAtColumn(data.column_id, newCard)
-        } catch (e) {
-            return e.message
-        }
+        const newCard = await this.boardsService.createNewCard(data.cardTitle)
+        return this.boardsService.addCardAtColumn(data.column_id, newCard)
     }
 
     @Put('move-card')
     async moveCardAtColumn(@Body() data: MoveCardAtColumnDto) {
-
+        return await this.boardsService.moveCardAtColumn(data.column_id, data.card_id)
     }
 
     @Put('delete-card')
-    async deleteCardAtColumn(@Body() card_id: number) {
-
+    async deleteCardAtColumn(@Body() data: DeleteCardDto) {
+        return await this.boardsService.deleteCard(data.card_id)
     }
 
     @Put('delete-column')
@@ -66,7 +57,8 @@ export class BoardsController {
     }
 
     @Put('delete-board')
-    async deleteBoard(@Body() board_id: number) {
-
+    async deleteBoard(@Res() res: Response, @Body() data: DeleteBoardDto) {
+        await this.boardsService.deleteBoard(data.board_id)
+        return res.status(200).json('success')
     }
 }
