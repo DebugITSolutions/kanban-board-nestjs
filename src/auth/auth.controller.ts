@@ -39,6 +39,7 @@ export class AuthController {
         await this.authService.saveToken(currentUser.email, tokens.refreshToken)
         response.cookie('refreshToken', tokens.refreshToken)
         return response.status(HttpStatus.OK).json({
+                id: currentUser.id,
                 email: currentUser.email,
                 name: currentUser.name,
                 accessToken: tokens.accessToken

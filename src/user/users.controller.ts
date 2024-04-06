@@ -19,7 +19,7 @@ export class UsersController {
     @Post('sign-up')
     async createUser(@Body() createUserDto: CreateUserDto): Promise<Users | undefined> {
         try {
-            return this.usersService.createUser(createUserDto)
+            return await this.usersService.createUser(createUserDto)
         } catch (e) {
             return e.message
         }

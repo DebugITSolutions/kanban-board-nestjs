@@ -26,7 +26,7 @@ export class BoardsController {
     }
 
     @Get('full-board/:board_id')
-    async getBoard(@Param('board_id') id: number) {
+    async getBoard(@Param('board_   id') id: number) {
         return await this.boardsService.getFullInfoBoardById(id)
     }
 

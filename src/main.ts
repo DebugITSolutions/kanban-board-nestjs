@@ -5,8 +5,12 @@ import * as cookieParser from "cookie-parser";
 async function start() {
   try {
     const PORT = 5000
-    const app = await NestFactory.create(AppModule,{ cors: true });
+    const app = await NestFactory.create(AppModule);
 
+    app.enableCors({
+      origin: 'http://localhost:3000', // Разрешенный источник (домен)
+      credentials: true, // Разрешение передачи куки и аутентификации
+    });
     const config = new DocumentBuilder()
         .setTitle('API build')
         .addBearerAuth({
@@ -20,6 +24,7 @@ async function start() {
         .build()
     const document = SwaggerModule.createDocument(app, config);
     SwaggerModule.setup('api', app, document);
+
     app.use(cookieParser())
     await app.listen(PORT, () => console.log(`server start on PORT=${PORT}`));
   } catch (e) {

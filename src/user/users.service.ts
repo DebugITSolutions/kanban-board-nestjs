@@ -15,10 +15,11 @@ export class UsersService {
         private readonly tokenRepository: Repository<Token>,
         private readonly passwordService: PasswordService,
     ) {}
-    createUser(userData: CreateUserDto) {
+    async createUser(userData: CreateUserDto) {
         const newUser = this.userRepository.create(userData);
         const passwordHash = this.passwordService.generateHashPassword(userData.password)
-        return this.userRepository.save({...newUser, password: passwordHash})
+        await this.userRepository.save({...newUser, password: passwordHash})
+        return {...newUser, password: ""}
     }
 
     async getUserByEmail(email: string) {
