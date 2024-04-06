@@ -5,7 +5,7 @@ import {InjectRepository} from "@nestjs/typeorm";
 import {Repository} from "typeorm";
 import {UsersService} from "./users.service";
 import {AuthGuard} from "../guard/auth.guard";
-import {ApiHeader, ApiOkResponse} from "@nestjs/swagger";
+import {ApiBearerAuth, ApiHeader, ApiOkResponse} from "@nestjs/swagger";
 
 @Controller('users')
 
@@ -26,15 +26,8 @@ export class UsersController {
     }
 
 
-    @ApiOkResponse({
-        description: 'Здесь нужно передать заголовок Autorization: Bearer access-token для получения данных',
-        isArray: true
-    })
     @Get(':email')
-    @ApiHeader({
-        description: 'Заголовок в swagger почему-то не добавляется к запросу, пытался разобраться, но пока безуспешно',
-        name: 'Authorization'
-    })
+    @ApiBearerAuth()
     @UseGuards(AuthGuard)
     async getUserByEmail(@Param('email') email: string): Promise<Users | Object> {
         try {

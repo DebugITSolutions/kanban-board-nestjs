@@ -269,7 +269,8 @@ export class BoardsService {
         try {
             const currentCard = await this.cardsRepository.findOne({
                 where: {id: card_id},
-                relations: ['columns', 'columns.boards']
+                relations: ['columns', 'columns.boards'],
+
             })
             if (!currentCard) {
                 throw new BadRequestException()

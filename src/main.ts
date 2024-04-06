@@ -9,6 +9,14 @@ async function start() {
 
     const config = new DocumentBuilder()
         .setTitle('API build')
+        .addBearerAuth({
+          type: 'http',
+          scheme: 'bearer',
+          bearerFormat: 'JWT',
+          name: 'Authorization',
+          in: 'header',
+          description: 'Enter your Bearer token here', // Описание поля ввода
+        }, 'bearer') // Добавляем Bearer Token в Swagger
         .build()
     const document = SwaggerModule.createDocument(app, config);
     SwaggerModule.setup('api', app, document);

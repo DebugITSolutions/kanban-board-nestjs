@@ -1,4 +1,4 @@
-import {Body, Controller, Delete, Get, Param, Post, Put, Res} from "@nestjs/common";
+import {Body, Controller, Delete, Get, Param, Post, Put, Res, UseGuards} from "@nestjs/common";
 import {BoardsService} from "./boards.service";
 import {
     BoardAddCardDto,
@@ -9,10 +9,16 @@ import {
     MoveCardAtColumnDto
 } from "./dto";
 import {Response} from "express";
+import {AuthGuard} from "../guard/auth.guard";
+import {ApiBearerAuth} from "@nestjs/swagger";
 
 @Controller('boards')
+@ApiBearerAuth()
+@UseGuards(AuthGuard)
 export class BoardsController {
-    constructor(private readonly boardsService: BoardsService) {
+    constructor(
+        private readonly boardsService: BoardsService,
+    ) {
     }
     @Post('create')
     async createBoard(@Body() boardInfo: BoardsCreateDto) {
