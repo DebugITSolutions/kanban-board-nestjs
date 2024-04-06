@@ -46,6 +46,26 @@ export class BoardsService {
         }
     }
 
+    async getAllBoards(user_id: number) {
+        try {
+            const allBoards = await this.userRepository
+                .createQueryBuilder()
+                .select('board')
+                .from(Boards, 'board')
+                .innerJoin('board.users', 'user')
+                .where('user.id = :user_id', { user_id })
+                .getMany()
+
+
+            if (!allBoards) {
+                throw new BadRequestException()
+            }
+            return allBoards
+        } catch (e) {
+            throw new BadRequestException(e.message)
+        }
+    }
+
     async getFullInfoBoardById(id: number) {
         try {
             const board = await this.boardsRepository.findOne({

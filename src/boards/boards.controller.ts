@@ -25,9 +25,14 @@ export class BoardsController {
         return await this.boardsService.createNewBoard(boardInfo)
     }
 
-    @Get('full-board/:id')
-    async getBoard(@Param('id') id: number) {
+    @Get('full-board/:board_id')
+    async getBoard(@Param('board_id') id: number) {
         return await this.boardsService.getFullInfoBoardById(id)
+    }
+
+    @Get('all-boards/:user_id')
+    async getAllBoard(@Param('user_id') user_id: number) {
+        return await this.boardsService.getAllBoards(user_id)
     }
 
     @Put('add-user')
