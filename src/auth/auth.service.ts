@@ -16,7 +16,7 @@ export class AuthService {
     ) {}
 
     generateTokens(userData: CreateUserDto) {
-        const accessToken = this.jwtService.sign({email: userData.email, name: userData.name}, {expiresIn: "1m"})
+        const accessToken = this.jwtService.sign({email: userData.email, name: userData.name}, {expiresIn: "1d"})
         const refreshToken = this.jwtService.sign({email: userData.email, name: userData.name}, {expiresIn: "30d"})
         return {accessToken, refreshToken}
     }

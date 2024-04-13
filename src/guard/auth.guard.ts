@@ -11,20 +11,21 @@ export class AuthGuard implements CanActivate {
     ): boolean | Promise<boolean> | Observable<boolean> {
         const request = context.switchToHttp().getRequest();
         const header = request.headers.authorization;
-        if (!header) {
-            throw new UnauthorizedException('Не предоставлены учетные данные');
+        try {
+            if (!header) {
+                throw new UnauthorizedException('Не предоставлены учетные данные');
+            }
+            const token = header.split(' ')[1];
+            if (!token) {
+                throw new UnauthorizedException('Недействительные учетные данные');
+            }
+            const verifyToken = this.authService.verifyToken(token)
+            if (!verifyToken) {
+                throw new UnauthorizedException()
+            }
+        } catch (e) {
+            throw new UnauthorizedException(e.message)
         }
-        const token = header.split(' ')[1];
-        if (!token) {
-            throw new UnauthorizedException('Недействительные учетные данные');
-        }
-        return this.isAuthenticated(request);
-    }
-
-    private isAuthenticated(request: any): boolean {
-        const header = request.headers.authorization
-        const token = header.split(' ')[1]
-        const verifyToken = this.authService.verifyToken(token)
-        return !!verifyToken
+        return true
     }
 }
