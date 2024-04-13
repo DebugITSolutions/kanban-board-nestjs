@@ -23,11 +23,7 @@ export class UsersService {
     }
 
     async getUserByEmail(email: string) {
-        try {
-            return await this.userRepository.findOne({where: {email}})
-        } catch (e) {
-            return e
-        }
+        return await this.userRepository.findOne({where: {email}})
     }
 
     async signOut(email: string) {

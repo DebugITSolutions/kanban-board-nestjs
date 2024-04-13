@@ -16,21 +16,16 @@ export class AuthService {
     ) {}
 
     generateTokens(userData: CreateUserDto) {
-        const accessToken = this.jwtService.sign({email: userData.email, name: userData.name}, {expiresIn: "1d"})
+        const accessToken = this.jwtService.sign({email: userData.email, name: userData.name}, {expiresIn: "1m"})
         const refreshToken = this.jwtService.sign({email: userData.email, name: userData.name}, {expiresIn: "30d"})
         return {accessToken, refreshToken}
     }
 
     verifyToken(token: string) {
-        try {
-            if (!token) {
-                return new UnauthorizedException('Пользователь не авторизован')
-            }
-            return this.jwtService.verify(token)
-        } catch(e) {
-            throw new UnauthorizedException()
+        if (!token) {
+            return new UnauthorizedException('Пользователь не авторизован')
         }
-
+        return this.jwtService.verify(token)
     }
 
     async saveToken(email: string, token: string) {
@@ -38,9 +33,14 @@ export class AuthService {
             return new BadRequestException('Токен не найден')
         }
         const user = await this.usersService.getUserByEmail(email)
-        const currentToken = await this.tokenRepository.findOne({ where: { user: user } });
+
+        if (!user) {
+            throw new BadRequestException()
+        }
+        const currentToken = await this.tokenRepository.findOne({ where: { user } })
+
         if (currentToken) {
-            await this.tokenRepository.delete(currentToken.id);
+            await this.tokenRepository.delete(currentToken.id)
         }
 
         await this.tokenRepository.save({user, token})

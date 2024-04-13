@@ -27,45 +27,59 @@ export class AuthController {
 
     @Post('sign-in')
     async loginUser(@Res() response: Response, @Body() userData: SignInDto) {
-        const currentUser = await this.usersService.getUserByEmail(userData.email)
-        if (!currentUser) {
-            throw new BadRequestException('Пользователь не найден')
-        }
-        const passwordCheck = await this.passwordService.verifyPassword(userData.email, userData.password)
-        if (!passwordCheck) {
-            throw new BadRequestException()
-        }
-        const tokens = this.authService.generateTokens(currentUser)
-        await this.authService.saveToken(currentUser.email, tokens.refreshToken)
-        response.cookie('refreshToken', tokens.refreshToken)
-        return response.status(HttpStatus.OK).json({
+        try {
+            const currentUser = await this.usersService.getUserByEmail(userData.email)
+            if (!currentUser) {
+                return new BadRequestException('Пользователь не найден')
+            }
+            const passwordCheck = await this.passwordService.verifyPassword(userData.email, userData.password)
+            if (!passwordCheck) {
+                return new BadRequestException()
+            }
+            const tokens = this.authService.generateTokens(currentUser)
+            await this.authService.saveToken(currentUser.email, tokens.refreshToken)
+            response.cookie('refreshToken', tokens.refreshToken)
+            return response.status(HttpStatus.OK).json({
                 id: currentUser.id,
                 email: currentUser.email,
                 name: currentUser.name,
                 accessToken: tokens.accessToken
-        });
+            });
+        } catch (e) {
+            return new BadRequestException(e.message)
+        }
     }
 
     @Put('refresh')
     async refreshAccessToken(@Req() request: Request, @Res() response: Response) {
-        const refreshToken = request.cookies['refreshToken']
-        if (!refreshToken) {
-            throw new UnauthorizedException()
+        try {
+            const refreshToken = request.cookies['refreshToken']
+
+            if (!refreshToken) {
+                return new UnauthorizedException()
+            }
+            const verifyToken = this.authService.verifyToken(refreshToken)
+            if (!verifyToken) {
+                response.clearCookie('refreshToken')
+                return new UnauthorizedException()
+            }
+            const newTokens = this.authService.generateTokens(verifyToken)
+            response.cookie('refreshToken', newTokens.refreshToken)
+            response.cookie('accessToken', newTokens.accessToken)
+            return response.status(HttpStatus.OK).json({accessToken: newTokens.accessToken})
+        } catch (e) {
+            return new BadRequestException(e.message)
         }
-        const verifyToken = this.authService.verifyToken(refreshToken)
-        if (!verifyToken) {
-            response.clearCookie('refreshToken')
-            return new UnauthorizedException()
-        }
-        const newTokens = this.authService.generateTokens(verifyToken)
-        response.cookie('refreshToken', newTokens.refreshToken)
-        return response.status(HttpStatus.OK).json({accessToken: newTokens.accessToken})
     }
 
     @Put('sign-out')
     async signOutUser(@Res() response: Response, @Body() signOutDto: SignOutDto) {
-        await this.usersService.signOut(signOutDto.email)
-        response.clearCookie('refreshToken')
-        response.status(HttpStatus.OK).json('Успешный выход')
+        try {
+            await this.usersService.signOut(signOutDto.email)
+            response.clearCookie('refreshToken')
+            response.status(HttpStatus.OK).json('Успешный выход')
+        } catch (e) {
+            return new BadRequestException(e.message)
+        }
     }
 }

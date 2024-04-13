@@ -1,5 +1,4 @@
-import {Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn} from "typeorm";
-import {Boards} from "./boards.entity";
+import {Column, Entity, PrimaryGeneratedColumn} from "typeorm";
 
 @Entity()
 export class Users {
